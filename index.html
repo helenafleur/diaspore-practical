@@ -17,7 +17,7 @@
     height: 100vh;
     padding: 1.25rem 1.5rem 1rem;
   }
- 
+
   .topbar {
     display: flex;
     align-items: center;
@@ -29,9 +29,9 @@
   }
   .title-block h1 { font-size: 1.15rem; font-weight: 500; }
   .title-block p  { font-size: 0.8rem; color: #5f5e5a; margin-top: 2px; }
- 
+
   .right-controls { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
- 
+
   .toggle-group { display: flex; gap: 6px; }
   .toggle-btn {
     padding: 7px 22px; font-size: 13px;
@@ -42,7 +42,7 @@
   .toggle-btn:hover { border-color: #888; color: #2c2c2a; }
   .toggle-btn.active-nat  { background: #185FA5; border-color: #185FA5; color: white; font-weight: 500; }
   .toggle-btn.active-prot { background: #993C1D; border-color: #993C1D; color: white; font-weight: 500; }
- 
+
   .refresh-btn {
     padding: 6px 14px; font-size: 12px;
     border: 1px solid #bbb; border-radius: 6px;
@@ -50,17 +50,17 @@
     cursor: pointer;
   }
   .refresh-btn:hover { background: #f0eeea; color: #2c2c2a; }
- 
+
   #status { font-size: 11px; color: #888780; flex-shrink: 0; margin-bottom: 0.4rem; min-height: 16px; }
   #status.error { color: #a32d2d; }
- 
+
   .chart-wrapper {
     flex: 1; background: white; border-radius: 10px;
     border: 1px solid #e0dfd9; padding: 1rem 1.25rem 0.75rem;
     display: flex; flex-direction: column; min-height: 0;
   }
   .chart-inner { flex: 1; position: relative; min-height: 0; }
- 
+
   #legend {
     display: flex; flex-wrap: wrap; gap: 8px;
     margin-top: 0.6rem; font-size: 11px; color: #5f5e5a;
@@ -74,7 +74,7 @@
 </style>
 </head>
 <body>
- 
+
 <div class="topbar">
   <div class="title-block">
     <h1>Aerodynamic efficiency of flying diaspores</h1>
@@ -88,24 +88,24 @@
     <button class="refresh-btn" onclick="loadAll()">Refresh ↻</button>
   </div>
 </div>
- 
+
 <div id="status">Loading…</div>
- 
+
 <div class="chart-wrapper">
   <div class="chart-inner"><canvas id="mainChart"></canvas></div>
   <div id="legend"></div>
 </div>
- 
+
 <script>
 /* ============================================================
    SHEET URLS — replace with your published CSV links
    In Google Sheets: File → Share → Publish to web →
    select the sheet tab → CSV → Publish → copy link
    ============================================================ */
-const URL_NATURAL   = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTUdZSx5Ks_Jwo9f2MFSFyRX4MmTe7i2tRY5vERTlEehAYdyJe9bZMk0GYaico2TcYRMGy1XMbHaGnO/pub?gid=0&single=true&output=csv';
-const URL_PROTOTYPE = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTUdZSx5Ks_Jwo9f2MFSFyRX4MmTe7i2tRY5vERTlEehAYdyJe9bZMk0GYaico2TcYRMGy1XMbHaGnO/pub?gid=380474457&single=true&output=csv';
+const URL_NATURAL   = 'YOUR_NATURAL_SHEET_CSV_URL_HERE';
+const URL_PROTOTYPE = 'YOUR_PROTOTYPE_SHEET_CSV_URL_HERE';
 /* ============================================================ */
- 
+
 const DF_LINES = [
   { df: 0.5,  color: '#9FE1CB', label: 'DF = 0.5' },
   { df: 1.0,  color: '#5DCAA5', label: 'DF = 1'   },
@@ -116,26 +116,26 @@ const DF_LINES = [
 ];
 const COLORS_NAT   = ['#185FA5','#0F6E56','#3C3489','#085041','#0C447C','#1a6e3c','#263489'];
 const COLORS_PAPER = ['#993C1D','#854F0B','#7a2040','#633806','#711B0C','#72243E','#4a1f02'];
- 
+
 let chart = null;
 let naturalData = [], protoData = [];
 let currentView = 'natural';
- 
+
 function tFromDF(ws, df) { return Math.sqrt(0.61 * df / ws); }
- 
+
 function generateDFLine(df) {
   const pts = [];
   for (let ws = 0.02; ws <= 8.5; ws += 0.04)
     pts.push({ x: +ws.toFixed(3), y: +tFromDF(ws, df).toFixed(4) });
   return pts;
 }
- 
+
 function setStatus(msg, isError) {
   const el = document.getElementById('status');
   el.textContent = msg;
   el.className = isError ? 'error' : '';
 }
- 
+
 function parseRows(text) {
   const raw = text.trim().replace(/\r\n/g,'\n').replace(/\r/g,'\n');
   return raw.split('\n').map(row => {
@@ -149,7 +149,7 @@ function parseRows(text) {
     return cols;
   });
 }
- 
+
 function findCol(hdr, ...keys) {
   for (const key of keys) {
     const i = hdr.findIndex(h => h === key || h.startsWith(key));
@@ -157,22 +157,22 @@ function findCol(hdr, ...keys) {
   }
   return -1;
 }
- 
+
 function parseNatural(text) {
   const rows = parseRows(text);
   if (rows.length < 2) return [];
   const hdr = rows[0].map(h => h.toLowerCase().replace(/[^a-z0-9]/g,''));
   const nameI = findCol(hdr, 'name');
-  const wI    = findCol(hdr, 'w');
+  const wI    = findCol(hdr, 'wmn', 'w');
   const sI    = findCol(hdr, 's');
   const tI    = findCol(hdr, 't');
   if ([nameI,wI,sI,tI].some(i => i < 0)) return [];
   return rows.slice(1)
     .filter(r => r[nameI] && r[nameI].trim())
     .map(r => {
-      const W  = parseFloat(r[wI]);
+      const W  = parseFloat(r[wI]) / 1000;  // mN → N
       const Scm2 = parseFloat(r[sI]);
-      const S  = Scm2 / 10000;          // cm² → m²
+      const S  = Scm2 / 10000;              // cm² → m²
       const T  = parseFloat(r[tI]);
       const ws = W / S;
       const df = (T * T * ws) / 0.61;
@@ -180,7 +180,7 @@ function parseNatural(text) {
     })
     .filter(s => isFinite(s.ws) && s.ws > 0 && isFinite(s.T) && s.T > 0);
 }
- 
+
 function parsePrototype(text) {
   const rows = parseRows(text);
   if (rows.length < 2) return [];
@@ -189,7 +189,7 @@ function parsePrototype(text) {
   // "name" column          → individual student names (shown in legend subtitle)
   const protoNameI  = findCol(hdr, 'nameprototype', 'protoname', 'prototype');
   const studentNameI = findCol(hdr, 'name');
-  const wI  = findCol(hdr, 'w');
+  const wI  = findCol(hdr, 'wmn', 'w');
   const sI  = findCol(hdr, 's');
   const tI  = findCol(hdr, 't');
   if ([wI,sI,tI].some(i => i < 0)) return [];
@@ -198,9 +198,9 @@ function parsePrototype(text) {
   return rows.slice(1)
     .filter(r => r[titleI] && r[titleI].trim())
     .map(r => {
-      const W    = parseFloat(r[wI]);
+      const W    = parseFloat(r[wI]) / 1000;  // mN → N
       const Scm2 = parseFloat(r[sI]);
-      const S    = Scm2 / 10000;        // cm² → m²
+      const S    = Scm2 / 10000;              // cm² → m²
       const T    = parseFloat(r[tI]);
       const ws   = W / S;
       const df   = (T * T * ws) / 0.61;
@@ -209,13 +209,13 @@ function parsePrototype(text) {
     })
     .filter(s => isFinite(s.ws) && s.ws > 0 && isFinite(s.T) && s.T > 0);
 }
- 
+
 async function fetchCSV(url) {
   const resp = await fetch(url);
   if (!resp.ok) throw new Error('HTTP ' + resp.status);
   return await resp.text();
 }
- 
+
 async function loadAll() {
   setStatus('Loading…');
   try {
@@ -234,26 +234,26 @@ async function loadAll() {
     setStatus('Could not load data: ' + e.message, true);
   }
 }
- 
+
 function showView(view) {
   currentView = view;
   document.getElementById('btn-nat').className  = 'toggle-btn' + (view === 'natural'   ? ' active-nat'  : '');
   document.getElementById('btn-prot').className = 'toggle-btn' + (view === 'prototype' ? ' active-prot' : '');
   buildChart(view === 'natural' ? naturalData : protoData, view);
 }
- 
+
 function buildChart(students, view) {
   if (chart) chart.destroy();
   const colors = view === 'natural' ? COLORS_NAT : COLORS_PAPER;
   const isNat  = view === 'natural';
- 
+
   const dfDatasets = DF_LINES.map(line => ({
     label: line.label, data: generateDFLine(line.df),
     type: 'line', borderColor: line.color, borderWidth: 1.5,
     pointRadius: 0, fill: false, tension: 0.3,
     order: 2, parsing: false, _isDFLine: true,
   }));
- 
+
   const studentDatasets = students.map((s, i) => {
     const col = colors[i % colors.length];
     return {
@@ -269,7 +269,7 @@ function buildChart(students, view) {
       _students: s.students || '',
     };
   });
- 
+
   chart = new Chart(document.getElementById('mainChart'), {
     type: 'scatter',
     data: { datasets: [...dfDatasets, ...studentDatasets] },
@@ -317,10 +317,10 @@ function buildChart(students, view) {
       }
     }
   });
- 
+
   buildLegend(students, view);
 }
- 
+
 function buildLegend(students, view) {
   const colors = view === 'natural' ? COLORS_NAT : COLORS_PAPER;
   const isNat  = view === 'natural';
@@ -340,7 +340,7 @@ function buildLegend(students, view) {
   }
   document.getElementById('legend').innerHTML = html;
 }
- 
+
 loadAll();
 </script>
 </body>
