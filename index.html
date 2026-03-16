@@ -7,181 +7,138 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
   body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     background: #f5f4f0;
     color: #2c2c2a;
-    padding: 2rem;
-    min-height: 100vh;
-  }
-  h1 { font-size: 1.3rem; font-weight: 500; margin-bottom: 0.25rem; }
-  .subtitle { font-size: 0.85rem; color: #5f5e5a; margin-bottom: 1.5rem; }
-
-  .controls {
     display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
+    flex-direction: column;
+    height: 100vh;
+    padding: 1.25rem 1.5rem 1rem;
+  }
+ 
+  .topbar {
+    display: flex;
     align-items: center;
-    margin-bottom: 0.75rem;
-  }
-  .controls input[type="text"] {
-    flex: 1;
-    min-width: 260px;
-    padding: 7px 10px;
-    font-size: 13px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    background: white;
-    color: #2c2c2a;
-  }
-  .controls input[type="text"]:focus { outline: none; border-color: #378add; }
-  button {
-    padding: 7px 14px;
-    font-size: 13px;
-    border: 1px solid #bbb;
-    border-radius: 6px;
-    background: white;
-    color: #2c2c2a;
-    cursor: pointer;
-    white-space: nowrap;
-  }
-  button:hover { background: #f0eeea; }
-  button.primary { background: #378add; color: white; border-color: #378add; }
-  button.primary:hover { background: #2a6fb5; }
-
-  #status {
-    font-size: 12px;
-    color: #5f5e5a;
-    margin-bottom: 1rem;
-    min-height: 18px;
-  }
-  #status.error { color: #a32d2d; }
-
-  .chart-wrapper {
-    background: white;
-    border-radius: 10px;
-    border: 1px solid #e0dfd9;
-    padding: 1.5rem 1.5rem 1rem;
-  }
-  .chart-inner { position: relative; width: 100%; height: 480px; }
-
-  #legend {
-    display: flex;
+    justify-content: space-between;
     flex-wrap: wrap;
-    gap: 10px;
-    margin-top: 1.25rem;
-    font-size: 12px;
-    color: #5f5e5a;
-    padding-top: 0.75rem;
-    border-top: 1px solid #e8e7e2;
+    gap: 12px;
+    margin-bottom: 0.75rem;
+    flex-shrink: 0;
   }
-  .legend-section-break { flex-basis: 100%; height: 0; }
-  .legend-item { display: flex; align-items: center; gap: 5px; }
-  .legend-line { display: inline-block; width: 22px; height: 2px; flex-shrink: 0; }
-  .legend-dot  { display: inline-block; width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
-  .legend-diamond {
-    display: inline-block; width: 10px; height: 10px;
-    transform: rotate(45deg); flex-shrink: 0;
+  .title-block h1 { font-size: 1.15rem; font-weight: 500; }
+  .title-block p  { font-size: 0.8rem; color: #5f5e5a; margin-top: 2px; }
+ 
+  .right-controls { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+ 
+  .toggle-group { display: flex; gap: 6px; }
+  .toggle-btn {
+    padding: 7px 22px; font-size: 13px;
+    border: 1.5px solid #bbb; border-radius: 20px;
+    background: white; color: #5f5e5a;
+    cursor: pointer; font-weight: 400; transition: all 0.15s;
   }
-
-  .help {
-    margin-top: 1.25rem;
-    font-size: 12px;
-    color: #888780;
-    background: #f5f4f0;
-    border-radius: 6px;
-    padding: 0.75rem 1rem;
-    line-height: 1.7;
+  .toggle-btn:hover { border-color: #888; color: #2c2c2a; }
+  .toggle-btn.active-nat  { background: #185FA5; border-color: #185FA5; color: white; font-weight: 500; }
+  .toggle-btn.active-prot { background: #993C1D; border-color: #993C1D; color: white; font-weight: 500; }
+ 
+  .refresh-btn {
+    padding: 6px 14px; font-size: 12px;
+    border: 1px solid #bbb; border-radius: 6px;
+    background: white; color: #5f5e5a;
+    cursor: pointer;
   }
-  code {
-    font-family: 'SF Mono', Consolas, monospace;
-    font-size: 11px;
-    background: #e8e7e2;
-    padding: 1px 5px;
-    border-radius: 3px;
+  .refresh-btn:hover { background: #f0eeea; color: #2c2c2a; }
+ 
+  #status { font-size: 11px; color: #888780; flex-shrink: 0; margin-bottom: 0.4rem; min-height: 16px; }
+  #status.error { color: #a32d2d; }
+ 
+  .chart-wrapper {
+    flex: 1; background: white; border-radius: 10px;
+    border: 1px solid #e0dfd9; padding: 1rem 1.25rem 0.75rem;
+    display: flex; flex-direction: column; min-height: 0;
   }
-  .refresh-note { font-size: 11px; color: #aaa; margin-top: 0.5rem; }
+  .chart-inner { flex: 1; position: relative; min-height: 0; }
+ 
+  #legend {
+    display: flex; flex-wrap: wrap; gap: 8px;
+    margin-top: 0.6rem; font-size: 11px; color: #5f5e5a;
+    padding-top: 0.6rem; border-top: 1px solid #e8e7e2; flex-shrink: 0;
+  }
+  .legend-break   { flex-basis: 100%; height: 0; }
+  .legend-item    { display: flex; align-items: center; gap: 4px; }
+  .legend-line    { display: inline-block; width: 20px; height: 2px; flex-shrink: 0; }
+  .legend-dot     { display: inline-block; width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+  .legend-diamond { display: inline-block; width: 8px; height: 8px; transform: rotate(45deg); flex-shrink: 0; }
 </style>
 </head>
 <body>
-
-<h1>Aerodynamic efficiency of flying diaspores</h1>
-<p class="subtitle">Descent time vs wing loading — coloured lines show constant descent factor (DF)</p>
-
-<div class="controls">
-  <input type="text" id="csvUrl"
-    value="https://docs.google.com/spreadsheets/d/e/2PACX-1vQgQwMO59Ue1sYq8LRPUMe0yGWm0AE8f9ZwthA8BxhKZrCN39miJqcu292ene1ICxO3YR5cfSen4wYH/pub?output=csv"
-    placeholder="Google Sheets CSV export URL" />
-  <button class="primary" onclick="loadSheet()">Load / Refresh ↻</button>
-  <button onclick="loadDemo()">Demo data</button>
-</div>
-
-<div id="status">Ready — click "Load / Refresh" to fetch student data.</div>
-
-<div class="chart-wrapper">
-  <div class="chart-inner">
-    <canvas id="mainChart"></canvas>
+ 
+<div class="topbar">
+  <div class="title-block">
+    <h1>Aerodynamic efficiency of flying diaspores</h1>
+    <p>Descent time vs wing loading — coloured lines show constant descent factor (DF)</p>
   </div>
+  <div class="right-controls">
+    <div class="toggle-group">
+      <button class="toggle-btn active-nat" id="btn-nat"  onclick="showView('natural')">Natural diaspores</button>
+      <button class="toggle-btn"            id="btn-prot" onclick="showView('prototype')">Paper prototypes</button>
+    </div>
+    <button class="refresh-btn" onclick="loadAll()">Refresh ↻</button>
+  </div>
+</div>
+ 
+<div id="status">Loading…</div>
+ 
+<div class="chart-wrapper">
+  <div class="chart-inner"><canvas id="mainChart"></canvas></div>
   <div id="legend"></div>
 </div>
-
-<div class="help">
-  <strong>Expected column names in your Google Sheet</strong> (case-insensitive):<br>
-  <code>name</code> — student name or pair &nbsp;
-  <code>W</code> — weight in N &nbsp;
-  <code>S</code> — surface area in m² &nbsp;
-  <code>T</code> — descent time in s m⁻¹ &nbsp;
-  <code>type</code> — <em>natural</em> or <em>paper</em> (optional, controls shape &amp; colour family)<br><br>
-  DF is calculated automatically as <strong>DF = T² × (W/S) / 0.61</strong><br>
-  Circles = natural diaspores &nbsp;|&nbsp; Diamonds = paper prototypes
-  <p class="refresh-note">Tip: keep this page open and click "Load / Refresh" as students add rows to the sheet.</p>
-</div>
-
+ 
 <script>
+/* ============================================================
+   SHEET URLS — replace with your published CSV links
+   In Google Sheets: File → Share → Publish to web →
+   select the sheet tab → CSV → Publish → copy link
+   ============================================================ */
+const URL_NATURAL   = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTUdZSx5Ks_Jwo9f2MFSFyRX4MmTe7i2tRY5vERTlEehAYdyJe9bZMk0GYaico2TcYRMGy1XMbHaGnO/pub?gid=0&single=true&output=csv';
+const URL_PROTOTYPE = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTUdZSx5Ks_Jwo9f2MFSFyRX4MmTe7i2tRY5vERTlEehAYdyJe9bZMk0GYaico2TcYRMGy1XMbHaGnO/pub?gid=380474457&single=true&output=csv';
+/* ============================================================ */
+ 
 const DF_LINES = [
   { df: 0.5,  color: '#9FE1CB', label: 'DF = 0.5' },
-  { df: 1.0,  color: '#5DCAA5', label: 'DF = 1' },
-  { df: 2.0,  color: '#378ADD', label: 'DF = 2' },
-  { df: 3.0,  color: '#7F77DD', label: 'DF = 3' },
-  { df: 5.0,  color: '#EF9F27', label: 'DF = 5' },
-  { df: 10.0, color: '#D85A30', label: 'DF = 10' },
+  { df: 1.0,  color: '#5DCAA5', label: 'DF = 1'   },
+  { df: 2.0,  color: '#378ADD', label: 'DF = 2'   },
+  { df: 3.0,  color: '#7F77DD', label: 'DF = 3'   },
+  { df: 5.0,  color: '#EF9F27', label: 'DF = 5'   },
+  { df: 10.0, color: '#D85A30', label: 'DF = 10'  },
 ];
-
-const PT_COLORS_NATURAL = ['#185FA5','#0F6E56','#3C3489','#085041','#0C447C','#27500A','#04342C'];
-const PT_COLORS_PAPER   = ['#993C1D','#854F0B','#993556','#633806','#711B0C','#72243E','#412402'];
-
+const COLORS_NAT   = ['#185FA5','#0F6E56','#3C3489','#085041','#0C447C','#1a6e3c','#263489'];
+const COLORS_PAPER = ['#993C1D','#854F0B','#7a2040','#633806','#711B0C','#72243E','#4a1f02'];
+ 
 let chart = null;
-let niColor = 0, piColor = 0;
-
+let naturalData = [], protoData = [];
+let currentView = 'natural';
+ 
 function tFromDF(ws, df) { return Math.sqrt(0.61 * df / ws); }
-
+ 
 function generateDFLine(df) {
   const pts = [];
   for (let ws = 0.02; ws <= 8.5; ws += 0.04)
-    pts.push({ x: parseFloat(ws.toFixed(3)), y: parseFloat(tFromDF(ws, df).toFixed(4)) });
+    pts.push({ x: +ws.toFixed(3), y: +tFromDF(ws, df).toFixed(4) });
   return pts;
 }
-
-function colorFor(type) {
-  const isNat = !type || type.toLowerCase().includes('nat');
-  return isNat
-    ? PT_COLORS_NATURAL[niColor++ % PT_COLORS_NATURAL.length]
-    : PT_COLORS_PAPER[piColor++ % PT_COLORS_PAPER.length];
-}
-
-function shapeFor(type) {
-  return (!type || type.toLowerCase().includes('nat')) ? 'circle' : 'rectRot';
-}
-
+ 
 function setStatus(msg, isError) {
   const el = document.getElementById('status');
   el.textContent = msg;
   el.className = isError ? 'error' : '';
 }
-
-function parseCSV(text) {
-  // Handle quoted fields
-  const rows = text.trim().split('\n').map(row => {
+ 
+function parseRows(text) {
+  const raw = text.trim().replace(/\r\n/g,'\n').replace(/\r/g,'\n');
+  return raw.split('\n').map(row => {
     const cols = []; let cur = '', inQ = false;
     for (const ch of row) {
       if (ch === '"') { inQ = !inQ; }
@@ -191,102 +148,146 @@ function parseCSV(text) {
     cols.push(cur.trim());
     return cols;
   });
-
-  if (rows.length < 2) { setStatus('Sheet appears empty.', true); return null; }
-
-  const hdr = rows[0].map(h => h.toLowerCase().replace(/[^a-z0-9]/g, ''));
-  const idx = k => hdr.findIndex(h => h === k || h.startsWith(k));
-  const nameI = idx('name'), wI = idx('w'), sI = idx('s'), tI = idx('t'), typeI = idx('type');
-
-  const missing = ['name','w','s','t'].filter((_, i) => [nameI, wI, sI, tI][i] < 0);
-  if (missing.length) {
-    setStatus('Missing columns: ' + missing.join(', ') + '. Columns found: ' + hdr.join(', '), true);
-    return null;
+}
+ 
+function findCol(hdr, ...keys) {
+  for (const key of keys) {
+    const i = hdr.findIndex(h => h === key || h.startsWith(key));
+    if (i >= 0) return i;
   }
-
-  const students = rows.slice(1)
-    .filter(r => r[nameI] && r[nameI].trim() !== '')
+  return -1;
+}
+ 
+function parseNatural(text) {
+  const rows = parseRows(text);
+  if (rows.length < 2) return [];
+  const hdr = rows[0].map(h => h.toLowerCase().replace(/[^a-z0-9]/g,''));
+  const nameI = findCol(hdr, 'name');
+  const wI    = findCol(hdr, 'w');
+  const sI    = findCol(hdr, 's');
+  const tI    = findCol(hdr, 't');
+  if ([nameI,wI,sI,tI].some(i => i < 0)) return [];
+  return rows.slice(1)
+    .filter(r => r[nameI] && r[nameI].trim())
     .map(r => {
-      const W = parseFloat(r[wI]);
-      const S = parseFloat(r[sI]);
-      const T = parseFloat(r[tI]);
+      const W  = parseFloat(r[wI]);
+      const Scm2 = parseFloat(r[sI]);
+      const S  = Scm2 / 10000;          // cm² → m²
+      const T  = parseFloat(r[tI]);
       const ws = W / S;
       const df = (T * T * ws) / 0.61;
-      const type = typeI >= 0 ? r[typeI] : '';
-      return { name: r[nameI].trim(), W, S, T, ws, df, type };
+      return { name: r[nameI].trim(), W, S, T, ws, df };
     })
     .filter(s => isFinite(s.ws) && s.ws > 0 && isFinite(s.T) && s.T > 0);
-
-  return students;
 }
-
-function buildChart(students) {
+ 
+function parsePrototype(text) {
+  const rows = parseRows(text);
+  if (rows.length < 2) return [];
+  const hdr = rows[0].map(h => h.toLowerCase().replace(/[^a-z0-9]/g,''));
+  // "name prototype" column → used as hover title
+  // "name" column          → individual student names (shown in legend subtitle)
+  const protoNameI  = findCol(hdr, 'nameprototype', 'protoname', 'prototype');
+  const studentNameI = findCol(hdr, 'name');
+  const wI  = findCol(hdr, 'w');
+  const sI  = findCol(hdr, 's');
+  const tI  = findCol(hdr, 't');
+  if ([wI,sI,tI].some(i => i < 0)) return [];
+  // If no separate prototype name column, fall back to student name
+  const titleI = protoNameI >= 0 ? protoNameI : studentNameI;
+  return rows.slice(1)
+    .filter(r => r[titleI] && r[titleI].trim())
+    .map(r => {
+      const W    = parseFloat(r[wI]);
+      const Scm2 = parseFloat(r[sI]);
+      const S    = Scm2 / 10000;        // cm² → m²
+      const T    = parseFloat(r[tI]);
+      const ws   = W / S;
+      const df   = (T * T * ws) / 0.61;
+      const students = studentNameI >= 0 && studentNameI !== titleI ? r[studentNameI].trim() : '';
+      return { name: r[titleI].trim(), students, W, S, T, ws, df };
+    })
+    .filter(s => isFinite(s.ws) && s.ws > 0 && isFinite(s.T) && s.T > 0);
+}
+ 
+async function fetchCSV(url) {
+  const resp = await fetch(url);
+  if (!resp.ok) throw new Error('HTTP ' + resp.status);
+  return await resp.text();
+}
+ 
+async function loadAll() {
+  setStatus('Loading…');
+  try {
+    const [natText, protText] = await Promise.all([
+      fetchCSV(URL_NATURAL),
+      fetchCSV(URL_PROTOTYPE),
+    ]);
+    naturalData = parseNatural(natText);
+    protoData   = parsePrototype(protText);
+    showView(currentView);
+    setStatus(
+      naturalData.length + ' natural diaspore' + (naturalData.length !== 1 ? 's' : '') +
+      ', ' + protoData.length + ' prototype' + (protoData.length !== 1 ? 's' : '') + ' loaded.'
+    );
+  } catch(e) {
+    setStatus('Could not load data: ' + e.message, true);
+  }
+}
+ 
+function showView(view) {
+  currentView = view;
+  document.getElementById('btn-nat').className  = 'toggle-btn' + (view === 'natural'   ? ' active-nat'  : '');
+  document.getElementById('btn-prot').className = 'toggle-btn' + (view === 'prototype' ? ' active-prot' : '');
+  buildChart(view === 'natural' ? naturalData : protoData, view);
+}
+ 
+function buildChart(students, view) {
   if (chart) chart.destroy();
-  niColor = 0; piColor = 0;
-
+  const colors = view === 'natural' ? COLORS_NAT : COLORS_PAPER;
+  const isNat  = view === 'natural';
+ 
   const dfDatasets = DF_LINES.map(line => ({
-    label: line.label,
-    data: generateDFLine(line.df),
-    type: 'line',
-    borderColor: line.color,
-    borderWidth: 1.5,
-    pointRadius: 0,
-    fill: false,
-    tension: 0.3,
-    order: 2,
-    parsing: false,
-    _isDFLine: true,
+    label: line.label, data: generateDFLine(line.df),
+    type: 'line', borderColor: line.color, borderWidth: 1.5,
+    pointRadius: 0, fill: false, tension: 0.3,
+    order: 2, parsing: false, _isDFLine: true,
   }));
-
-  const studentDatasets = students.map(s => {
-    const col = colorFor(s.type);
+ 
+  const studentDatasets = students.map((s, i) => {
+    const col = colors[i % colors.length];
     return {
       label: s.name,
       data: [{ x: s.ws, y: s.T }],
       type: 'scatter',
-      backgroundColor: col + 'cc',
-      borderColor: col,
-      borderWidth: 1.5,
-      pointRadius: 9,
-      pointHoverRadius: 13,
-      pointStyle: shapeFor(s.type),
+      backgroundColor: col + 'bb', borderColor: col, borderWidth: 1.5,
+      pointRadius: 10, pointHoverRadius: 14,
+      pointStyle: isNat ? 'circle' : 'rectRot',
       order: 1,
-      _df: s.df,
-      _type: s.type || 'natural',
-      _W: s.W,
-      _S: s.S,
+      _df: s.df, _W: s.W, _S: s.S,
+      _name: s.name,
+      _students: s.students || '',
     };
   });
-
+ 
   chart = new Chart(document.getElementById('mainChart'), {
     type: 'scatter',
     data: { datasets: [...dfDatasets, ...studentDatasets] },
     options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      layout: { padding: { top: 10, right: 30, bottom: 10, left: 10 } },
+      responsive: true, maintainAspectRatio: false,
+      layout: { padding: { top: 8, right: 30, bottom: 4, left: 8 } },
       scales: {
         x: {
           type: 'linear', min: 0, max: 7,
-          title: {
-            display: true,
-            text: 'Wing loading  W/S  [N m⁻²]',
-            font: { size: 12 },
-            color: '#5f5e5a',
-          },
+          title: { display: true, text: 'Wing loading  W/S  [N m⁻²]', font: { size: 12 }, color: '#5f5e5a' },
           ticks: { font: { size: 11 }, color: '#5f5e5a' },
-          grid: { color: 'rgba(0,0,0,0.07)' },
+          grid: { color: 'rgba(0,0,0,0.06)' },
         },
         y: {
           type: 'linear', min: 0, max: 3.5,
-          title: {
-            display: true,
-            text: 'Descent time  T  [s m⁻¹]',
-            font: { size: 12 },
-            color: '#5f5e5a',
-          },
+          title: { display: true, text: 'Descent time  T  [s m⁻¹]', font: { size: 12 }, color: '#5f5e5a' },
           ticks: { font: { size: 11 }, color: '#5f5e5a' },
-          grid: { color: 'rgba(0,0,0,0.07)' },
+          grid: { color: 'rgba(0,0,0,0.06)' },
         }
       },
       plugins: {
@@ -294,93 +295,53 @@ function buildChart(students) {
         tooltip: {
           filter: item => !item.dataset._isDFLine,
           callbacks: {
-            title: ctx => ctx[0].dataset.label,
+            title: ctx => ctx[0].dataset._name,
             label: ctx => {
               const ds = ctx.dataset, pt = ctx.raw;
-              return [
-                'Type: ' + ds._type,
-                'W = ' + ds._W.toFixed(5) + ' N',
-                'S = ' + ds._S.toFixed(6) + ' m²',
-                'W/S = ' + pt.x.toFixed(4) + ' N m⁻²',
-                'T = ' + pt.y.toFixed(3) + ' s m⁻¹',
-                'DF = ' + ds._df.toFixed(2),
-              ];
+              const lines = [];
+              if (ds._students) lines.push(ds._students);
+              lines.push(
+                'W/S = ' + pt.x.toFixed(3) + ' N m⁻²',
+                'T = '   + pt.y.toFixed(3) + ' s m⁻¹',
+                'DF = '  + ds._df.toFixed(2),
+              );
+              return lines;
             }
           },
           backgroundColor: 'rgba(255,255,255,0.97)',
-          titleColor: '#2C2C2A',
-          bodyColor: '#5F5E5A',
-          borderColor: 'rgba(0,0,0,0.15)',
-          borderWidth: 1,
-          padding: 12,
-          titleFont: { size: 13, weight: '500' },
-          bodyFont: { size: 12 },
-          displayColors: false,
+          titleColor: '#2C2C2A', bodyColor: '#5F5E5A',
+          borderColor: 'rgba(0,0,0,0.15)', borderWidth: 1,
+          padding: 12, displayColors: false,
+          titleFont: { size: 14, weight: '500' }, bodyFont: { size: 12 },
         }
       }
     }
   });
-
-  buildLegend(students);
+ 
+  buildLegend(students, view);
 }
-
-function buildLegend(students) {
-  niColor = 0; piColor = 0;
-  const el = document.getElementById('legend');
+ 
+function buildLegend(students, view) {
+  const colors = view === 'natural' ? COLORS_NAT : COLORS_PAPER;
+  const isNat  = view === 'natural';
   let html = DF_LINES.map(l =>
-    `<span class="legend-item"><span class="legend-line" style="background:${l.color};"></span>${l.label}</span>`
+    `<span class="legend-item"><span class="legend-line" style="background:${l.color}"></span>${l.label}</span>`
   ).join('');
   if (students.length) {
-    html += `<span class="legend-section-break"></span>`;
-    students.forEach(s => {
-      const col = colorFor(s.type);
-      const isNat = !s.type || s.type.toLowerCase().includes('nat');
-      const shape = isNat
-        ? `<span class="legend-dot" style="background:${col};"></span>`
-        : `<span class="legend-diamond" style="background:${col};"></span>`;
-      html += `<span class="legend-item">${shape}${s.name} <span style="color:#aaa;margin-left:2px;">(DF ${s.df.toFixed(2)})</span></span>`;
+    html += `<span class="legend-break"></span>`;
+    students.forEach((s, i) => {
+      const col  = colors[i % colors.length];
+      const dot  = isNat
+        ? `<span class="legend-dot" style="background:${col}"></span>`
+        : `<span class="legend-diamond" style="background:${col}"></span>`;
+      const sub  = s.students ? ` <span style="color:#bbb;">(${s.students})</span>` : '';
+      html += `<span class="legend-item">${dot}${s.name}${sub} <span style="color:#bbb;margin-left:2px;">(DF ${s.df.toFixed(2)})</span></span>`;
     });
   }
-  el.innerHTML = html;
+  document.getElementById('legend').innerHTML = html;
 }
-
-async function loadSheet() {
-  const url = document.getElementById('csvUrl').value.trim();
-  if (!url) { setStatus('Please enter a URL.', true); return; }
-  setStatus('Loading…');
-  try {
-    const resp = await fetch(url);
-    if (!resp.ok) throw new Error('HTTP ' + resp.status);
-    const text = await resp.text();
-    const students = parseCSV(text);
-    if (!students) return;
-    if (!students.length) {
-      setStatus('Sheet loaded but no valid data rows yet — waiting for students to fill it in.', false);
-      buildChart([]);
-      return;
-    }
-    setStatus(students.length + ' entries loaded. Hover over a point to see details.');
-    buildChart(students);
-  } catch(e) {
-    setStatus('Could not load: ' + e.message + '. Make sure the sheet is published to the web (File → Share → Publish to web → CSV).', true);
-  }
-}
-
-function loadDemo() {
-  const demo = [
-    { name: 'Alice', W: 0.0012, S: 4.267e-4, T: 0.89, type: 'natural' },
-    { name: 'Bob', W: 0.0018, S: 5.8e-4, T: 0.72, type: 'natural' },
-    { name: 'Clara', W: 0.0009, S: 4.9e-4, T: 1.05, type: 'natural' },
-    { name: 'Daan', W: 0.0014, S: 6.2e-4, T: 0.80, type: 'natural' },
-    { name: 'Alice & Bob', W: 0.0010, S: 9.5e-4, T: 1.15, type: 'paper' },
-    { name: 'Clara & Daan', W: 0.0008, S: 1.1e-3, T: 1.35, type: 'paper' },
-  ].map(s => { s.ws = s.W/s.S; s.df = (s.T*s.T*s.ws)/0.61; return s; });
-  setStatus(demo.length + ' demo entries loaded.');
-  buildChart(demo);
-}
-
-// Build empty chart on load
-buildChart([]);
+ 
+loadAll();
 </script>
 </body>
 </html>
