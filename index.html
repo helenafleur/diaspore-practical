@@ -125,7 +125,7 @@ function tFromDF(ws, df) { return Math.sqrt(0.61 * df / ws); }
 
 function generateDFLine(df) {
   const pts = [];
-  for (let ws = 0.02; ws <= 8.5; ws += 0.04)
+  for (let ws = 0.02; ws <= 10; ws += 0.04)
     pts.push({ x: +ws.toFixed(3), y: +tFromDF(ws, df).toFixed(4) });
   return pts;
 }
